@@ -1,0 +1,44 @@
+name: ChartEditorGCD
+options:
+  bundleIdPrefix: com.gamercb
+  deploymentTarget:
+    iOS: "15.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    TARGETED_DEVICE_FAMILY: "1,2"
+    IPHONEOS_DEPLOYMENT_TARGET: "15.0"
+    CLANG_ENABLE_MODULES: YES
+    ENABLE_BITCODE: NO
+targets:
+  ChartEditorGCD:
+    type: application
+    platform: iOS
+    deploymentTarget: "15.0"
+    sources:
+      - path: ChartEditorGCD
+        excludes:
+          - "**/*.md"
+          - "Resources/**"
+          - "Assets.xcassets/**"
+    resources:
+      - path: ChartEditorGCD/Resources/g.dat
+      - path: ChartEditorGCD/Assets.xcassets
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.gamercb.charteditorgcd
+        PRODUCT_NAME: ChartEditorGCD
+        INFOPLIST_FILE: ChartEditorGCD/Info.plist
+        MARKETING_VERSION: "0.8.3"
+        CURRENT_PROJECT_VERSION: "11"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGNING_ALLOWED: "NO"
+        CODE_SIGN_IDENTITY: ""
+        DEVELOPMENT_TEAM: ""
+        GENERATE_INFOPLIST_FILE: "NO"
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks"
+    scheme:
+      testTargets: []
