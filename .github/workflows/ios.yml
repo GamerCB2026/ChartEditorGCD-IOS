@@ -60,8 +60,10 @@ jobs:
           rm -f "$OUT"
           zip -qry "$OUT" Payload
           ls -lh "$OUT"
-          # sanity: g.dat inside
-          unzip -l "$OUT" | grep -E 'g\.dat|ChartEditorGCD$' | head
+          # sanity: contenido e icono dentro del .app
+          test -f "Payload/ChartEditorGCD.app/g.dat" || { echo "g.dat missing in .app" >&2; exit 1; }
+          test -f "Payload/ChartEditorGCD.app/Assets.car" || { echo "Assets.car (icon) missing" >&2; exit 1; }
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIcons" "Payload/ChartEditorGCD.app/Info.plist" || { echo "CFBundleIcons missing" >&2; exit 1; }
 
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
