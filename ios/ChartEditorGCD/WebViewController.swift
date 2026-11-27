@@ -38,10 +38,46 @@ final class WebViewController: UIViewController, WKUIDelegate, WKNavigationDeleg
         webView = wv
         bridge.webView = wv
 
+        wv.configuration.userContentController.add(bridge, name: "gcdlog")
+        let errJS = """
+        window.addEventListener('error',function(e){try{webkit.messageHandlers.gcdlog.postMessage('JS: '+(e.message||'')+' @ '+(e.filename||e.target&&e.target.src||'')+':'+(e.lineno||0))}catch(x){}},true);
+        window.addEventListener('unhandledrejection',function(e){try{webkit.messageHandlers.gcdlog.postMessage('Promise: '+String(e.reason&&e.reason.message||e.reason))}catch(x){}});
+        """
+        wv.configuration.userContentController.addUserScript(WKUserScript(source: errJS, injectionTime: .atDocumentStart, forMainFrameOnly: false))
+
+        // Comprobar que g.dat existe y se descifra antes de cargar
+        do {
+            _ = try PackCrypto.openPath("index.html")
+        } catch {
+            showError("No se pudo abrir el contenido (g.dat): \(error)")
+            return
+        }
         // Misma entrada que el APK (index + testsong dentro de g.dat)
         if let url = URL(string: "gcd://app/index.html") {
             wv.load(URLRequest(url: url))
         }
+    }
+
+    private func showError(_ msg: String) {
+        NSLog("[GCD] %@", msg)
+        let safe = msg.replacingOccurrences(of: "&", with: "&amp;").replacingOccurrences(of: "<", with: "&lt;")
+        let html = "<html><head><meta name='viewport' content='width=device-width,initial-scale=1'></head>" +
+            "<body style='background:#111;color:#fff;font:16px -apple-system;padding:24px'>" +
+            "<h2 style='color:#ff5b84'>Chart Editor GCD V0.8.3 B1</h2><p>Error al cargar:</p><pre style='white-space:pre-wrap;color:#ffd27d'>" +
+            safe + "</pre></body></html>"
+        webView.loadHTMLString(html, baseURL: nil)
+    }
+
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        showError("Navegación: \(error.localizedDescription)")
+    }
+
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        showError("Carga: \(error.localizedDescription)")
+    }
+
+    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        if let url = URL(string: "gcd://app/index.html") { webView.load(URLRequest(url: url)) }
     }
 
     override var prefersStatusBarHidden: Bool { true }

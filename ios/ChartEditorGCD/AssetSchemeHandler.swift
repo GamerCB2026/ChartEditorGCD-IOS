@@ -19,13 +19,19 @@ final class AssetSchemeHandler: NSObject, WKURLSchemeHandler {
             do {
                 let data = try PackCrypto.openPath(path)
                 let mime = Self.mime(for: path)
-                let resp = URLResponse(url: url, mimeType: mime, expectedContentLength: data.count, textEncodingName: mime.hasPrefix("text/") ? "utf-8" : nil)
+                var ct = mime
+                if mime.hasPrefix("text/") || mime == "application/json" { ct += "; charset=utf-8" }
+                let resp: URLResponse = HTTPURLResponse(url: url, statusCode: 200, httpVersion: "HTTP/1.1",
+                    headerFields: ["Content-Type": ct, "Content-Length": String(data.count),
+                                   "Access-Control-Allow-Origin": "*", "Cache-Control": "no-cache"])
+                    ?? URLResponse(url: url, mimeType: mime, expectedContentLength: data.count, textEncodingName: nil)
                 DispatchQueue.main.async {
                     urlSchemeTask.didReceive(resp)
                     urlSchemeTask.didReceive(data)
                     urlSchemeTask.didFinish()
                 }
             } catch {
+                NSLog("[GCD] asset error %@: %@", path, String(describing: error))
                 DispatchQueue.main.async {
                     urlSchemeTask.didFailWithError(error)
                 }

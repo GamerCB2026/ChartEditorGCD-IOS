@@ -32,6 +32,7 @@ final class GCDBridge: NSObject, WKScriptMessageHandler {
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        if message.name == "gcdlog" { NSLog("[GCD] %@", String(describing: message.body)); return }
         guard let body = message.body as? [String: Any], let t = body["t"] as? String else { return }
         switch t {
         case "toast":
